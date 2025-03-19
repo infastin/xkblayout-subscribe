@@ -1,8 +1,17 @@
 #include <X11/XKBlib.h>
 #include <X11/Xutil.h>
 #include <stdio.h>
+#include <signal.h>
+#include <stdlib.h>
 
-int main(int argc, char **argv)
+void
+polite_exit(int signum)
+{
+	exit(128 + signum);
+}
+
+int
+main(int argc, char **argv)
 {
 	XEvent event;
 	Display *display;
@@ -17,6 +26,10 @@ int main(int argc, char **argv)
 	XkbSelectEventDetails(display, XkbUseCoreKbd, XkbStateNotify, XkbAllStateComponentsMask, XkbGroupStateMask);
 
 	XSync(display, False);
+
+	signal(SIGINT, polite_exit);
+	signal(SIGQUIT, polite_exit);
+	signal(SIGTERM, polite_exit);
 
 	while (1) {
 		XNextEvent(display, &event);
